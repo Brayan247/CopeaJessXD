@@ -74,17 +74,5 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
         }
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.INTERNET}, 1000);
-        }
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_NETWORK_STATE}, 1000);
-        }
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.ACCESS_NETWORK_STATE}, 1000);
     }
 }

@@ -61,16 +61,25 @@ public class HomeFragment extends Fragment implements View.OnClickListener {
         binding = null;
     }
 
+    public void verificar(){
+        if (!txtAlt.getText().toString().equals("")|| !txtLong.getText().toString().equals("") || !txtLat.getText().toString().equals("")){
+            Intent intent = new Intent(getContext(), MapsActivity.class);
+            intent.putExtra("latitud", txtLat.getText().toString());
+            intent.putExtra("longitud", txtLong.getText().toString());
+            intent.putExtra("altitud", txtAlt.getText().toString());
+            startActivity(intent);
+        }else{
+            Toast.makeText(getContext(),"Los campo no estan llenos", Toast.LENGTH_LONG).show();
+        }
+    }
+
     public void onClick(View v){
         if(v==btnUb){
             miPosicion();
             //Toast.makeText((Activity) getContext(), "click button", Toast.LENGTH_LONG).show();
         }
         if(v==btnMapa){
-            Intent IntentMap = new Intent( (HomeFragment.this, MapsActivity.class) ;
-            startActivity(IntentMap);
-
-            
+            verificar();
         }
     }
 

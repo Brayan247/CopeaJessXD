@@ -1,9 +1,17 @@
 package com.istl.mimaps;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -12,10 +20,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.istl.mimaps.databinding.ActivityMapsBinding;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, View.OnClickListener {
 
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
+    public double latitud;
+    public  double longitud;
+    SharedPreferences preferences;
+    private Button btnFavorito, btnEliminar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +40,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        btnFavorito = (Button) findViewById(R.id.btnfav);
+        btnEliminar = (Button) findViewById(R.id.btnlimp);
+        btnFavorito.setOnClickListener(this);
+        btnEliminar.setOnClickListener(this);
     }
 
     /**
@@ -41,11 +57,61 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
 
+
+        mMap = googleMap;
+        longitud = Double.parseDouble(getIntent().getStringExtra("longitud"));
+        latitud = Double.parseDouble(getIntent().getStringExtra("latitud"));
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng MiUbicacion = new LatLng(latitud, longitud);
+        mMap.addMarker(new MarkerOptions().position(MiUbicacion).title("Mi ubicacion"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(MiUbicacion));
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        CameraUpdate ZoomCam=CameraUpdateFactory.zoomTo(16);
+        mMap.animateCamera(ZoomCam);
+        mMap.setOnMapLongClickListener(this);
     }
+
+    @Override
+    public void onMapLongClick(LatLng latLng) {
+        Toast.makeText(MapsActivity.this, "Click Posicion"+latLng.latitude+latLng.longitude, Toast.LENGTH_SHORT).show();
+        mMap.addMarker(new MarkerOptions().position(latLng).title("Mi Ubicacion"));
+        guardarPreferencias(latLng);
+    }
+
+    public void guardarPreferencias(LatLng latLng){
+        preferences = getSharedPreferences("My Preferences", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor=preferences.edit();
+        editor.putFloat("latitud",(float) latLng.latitude);
+        editor.putFloat("longitud",(float)latLng.longitude);
+        editor.commit();
+    }
+
+    public void cargarPreferencias(){
+        double lat=preferences.getFloat("latitud",0);
+        double log=preferences.getFloat("longitud",0);
+        if (lat!=0){
+            LatLng puntoPref=new LatLng(lat,log);
+            mMap.addMarker(new MarkerOptions().position(puntoPref).title("Mi ubicacion"));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(puntoPref));
+        }else{
+            AlertDialog.Builder alert=new AlertDialog.Builder(this);
+            alert.setTitle("No tiene ningun sitio Favorito");
+            alert.setPositiveButton("OK",null);
+            alert.create().show();
+        }
+        Toast.makeText(MapsActivity.this,
+                "mi favorito es: "+lat+log,Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v==btnFavorito){
+            cargarPreferencias();
+        }
+        if (v==btnEliminar){
+            SharedPreferences.Editor editor=preferences.edit().clear();
+        }
+    }
+
 }
